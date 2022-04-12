@@ -1,22 +1,28 @@
 // CONFIGURACIÓN INICIAL EXPRESS
+// importo la librería de Express
 const express = require("express");
 // Iniciar express
 const app = express();
 // CONFIGURACION INICIAL MONGOOSE
+// Para conectarse al servidor de Mongo:
 const mongoose = require("mongoose");
+// Importo la librería que maneja la seguridad con las variables de ambiente
 const dotenv = require("dotenv");
-const userRoute = require("./routes/user")
+const userRoute = require("./routes/user");
+const authRoute = require("./routes/auth");
 
-// Iniciar variable de entorno de seguridad
+// Iniciar variable de ambiente de seguridad
 dotenv.config();
 
 mongoose.connect(process.env.MONGO_URL).then(()=>console.log("DB Connection successful!")).catch((err)=> {
     console.log(err);
 });
+
 //  Para poder hacer pruebas con Postman, debo iniciar express.json
 app.use(express.json());
-app.use("/api/users", userRoute);
+app.use("/api/auth", authRoute);
+app.use("/api/user", userRoute);
 
 app.listen(process.env.PORT || 5000, ()=> {
-    console.log("Backend server is running");
+    console.log("Backend server is running!");
 });
