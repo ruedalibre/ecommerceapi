@@ -1,13 +1,15 @@
 const router = require("express").Router();
-const User = require("../models/User")
+const User = require("../models/User");
+// importo librería de Crypto JS para encriptar las contraseñas de usuario
+const CryptoJS = require("crypto-js");
 
 // REGISTER
 router.post("/register", async (req, res)=> {
     const newUser = new User({
         username: req.body.username,
         email: req.body.email,
-        password: req.body.password,
-    });
+        password: CryptoJS.AES.encrypt(req.body.password, process.env.PASS_SEC).toString(),
+    }); 
 
     try{
         const savedUser = await newUser.save();
@@ -16,6 +18,28 @@ router.post("/register", async (req, res)=> {
         res.status(500).json(err);
     }
     
+});
+
+// LOGIN FUNCTION
+router.post("/login", async (req, res)=>{
+    try{
+        const user = await User.findOne({username: req.body.username});
+        // si no se encuentra un usuario con el nombre ingresado:
+        !user && res.status(401).json("Wrong credentials!")
+
+        const hashedPassword = CryptoJS.AES.decrypt(user.password, process.env.PASS_SEC
+        );
+        const OriginalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
+        // si la contraseña no coincide:
+        OriginalPassword !== req.body.password && res.status(401).json("Wrong credentials!");
+
+        const { password, ...others } = user;
+
+        // Si los datos de usuario y contraseña están correctos: 
+        res.status(200).json(others);
+    }catch(err){
+        res.status(500).json(err);
+    }
 });
 
 module.exports = router;
