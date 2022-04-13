@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken")
 
 
-const verifyToken = (req, res, next)=> {
+const verifyToken = (req, res, next) => {
     const authHeader = req.headers.token;
     if(authHeader) {
         // Accede al segundo elemento del token porque primero se dividió con split y el el token como tal está en la segunda posición del array
@@ -37,4 +37,7 @@ const verifyTokenAndAdmin = (req, res, next) => {
     });
 };
 
-module.exports = { verifyToken, verifyTokenAndAuthorization, verifyTokenAndAdmin }
+module.exports = { 
+    verifyToken, 
+    verifyTokenAndAuthorization, 
+    verifyTokenAndAdmin }
