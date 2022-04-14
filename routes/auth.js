@@ -27,15 +27,24 @@ router.post("/register", async (req, res)=> {
 // LOGIN FUNCTION
 router.post("/login", async (req, res)=>{
     try{
-        const user = await User.findOne({username: req.body.username});
-        // si no se encuentra un usuario con el nombre ingresado:
-        !user && res.status(401).json("Wrong credentials!")
-
-        const hashedPassword = CryptoJS.AES.decrypt(user.password, process.env.PASS_SEC
+        const user = await User.findOne(
+            {
+                username: req.body.user_name
+            }
         );
-        const OriginalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
+        // si no se encuentra un usuario con el nombre ingresado:
+        !user && res.status(401).json("Wrong User Name!")
+
+        const hashedPassword = CryptoJS.AES.decrypt(
+            user.password, 
+            process.env.PASS_SEC
+        );
+        const originalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
+        
+        const inputPassword = req.body.password;
         // si la contraseña no coincide:
-        OriginalPassword !== req.body.password && res.status(401).json("Wrong credentials!");
+        originalPassword !== inputPassword && 
+            res.status(401).json("Wrong Password!");
         
         // se crea el objeto que agrega el token de JWT al objeto original del user
         const accessToken = jwt.sign(
@@ -44,15 +53,14 @@ router.post("/login", async (req, res)=>{
                 isAdmin: user.isAdmin,
             }, 
             process.env.JWT_SEC,
-            {expiresIn:"3d"}
+                {expiresIn:"3d"}
         );
         
         // El formato _doc es propio de MongoDB y siempre guarda los documentos en dicho folder 
         const { password, ...others } = user._doc;
-
         // Si los datos de usuario y contraseña están correctos: 
         res.status(200).json({...others, accessToken});
-    }catch(err){
+    } catch(err) {
         res.status(500).json(err);
     }
 });

@@ -2,6 +2,10 @@ const User = require("../models/User");
 const { verifyToken, verifyTokenAndAuthorization, verifyTokenAndAdmin } = require("./verifyToken");
 
 const router = require("express").Router();
+/* --------------------------------------------------------------------
+                  CRUD COMPLETO DE LA APLICACIÓN
+--------------------------------------------------------------------- */
+
 
 // UPDATE FUNCTION
 router.put("/:id", verifyTokenAndAuthorization, async (req, res)=> {
@@ -28,10 +32,10 @@ router.put("/:id", verifyTokenAndAuthorization, async (req, res)=> {
 // DELETE FUNCTION
 router.delete("/:id", verifyTokenAndAuthorization, async(req, res) => {
     try{
-        await User.findByIdAndDelete(req.params.id)
-        res.status(200).json("User has been deleted...")
+        await User.findByIdAndDelete(req.params.id);
+        res.status(200).json("User has been deleted...");
     } catch(err) {
-        res.status(500).json(err)
+        res.status(500).json(err);
     }
 });
 
@@ -42,16 +46,16 @@ router.get("/find/:id", verifyTokenAndAdmin, async(req, res) => {
         const { password, ...others } = user._doc;
         res.status(200).json(others);
     } catch(err) {
-        res.status(500).json(err)
+        res.status(500).json(err);
     }
 });
 
 // GET ALL USERS
 router.get("/", verifyTokenAndAdmin, async(req, res) => {
-    const query = req.query.new
+    const query = req.query.new;
     try{
-        const users = query ? 
-            await User.find().sort({_id:-1}).limit(1) 
+        const users = query 
+            ? await User.find().sort({_id:-1}).limit(5) 
             : await User.find();
         res.status(200).json(users);
     } catch(err) {
@@ -65,12 +69,12 @@ router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
     const date = new Date();
     const lastYear = new Date(date.setFullYear(date.getFullYear() -1));
 
-    try{
+    try {
         const data = await User.aggregate([
             { $match: { createdAt: { $gte: lastYear } } },
             {
                 $project: {
-                    month: { $month: "$createdAt"},
+                    month: { $month: "$createdAt" },
                 },
             },
             {
@@ -87,6 +91,3 @@ router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
 });
 
 module.exports = router;
-
-/* CREACIÓN DE RUTAS. Uso un puerto para verificar que exista la comunicación correcta con cada endpoint al hacer las peticiones al servidor. 
-Para probarlo puedo ir al navegador y escribir ---> http://localhost:5000/api/test */
